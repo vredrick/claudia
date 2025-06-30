@@ -101,6 +101,14 @@ Think of Claudia as your command center for Claude Code - bridging the gap betwe
 - **Project Scanner**: Find all CLAUDE.md files in your projects
 - **Syntax Highlighting**: Full markdown support with syntax highlighting
 
+### 🚀 **Recent Improvements**
+- **Horizontal Overflow Fixes**: Better content containment preventing unwanted scrolling
+- **Enhanced Text Wrapping**: Long messages now wrap properly without being cut off
+- **Improved Code Block Scrolling**: Code blocks scroll independently within their containers
+- **Web Search Widget**: Integrated web search capabilities in tool widgets
+- **Thinking Mode Selector**: Choose thinking modes directly from the prompt input
+- **Enhanced Tool Widgets**: Better visual feedback and result displays
+
 ## 📖 Usage
 
 ### Getting Started
@@ -360,8 +368,12 @@ claudia/
 ### Development Commands
 
 ```bash
-# Start development server
+# Start development server (primary command)
 bun run tauri dev
+
+# Note: If you get a "Port 1420 is already in use" error:
+# - Kill the existing process: lsof -ti:1420 | xargs kill -9
+# - Or use a different port: VITE_PORT=3000 bun run tauri dev
 
 # Run frontend only
 bun run dev
@@ -421,6 +433,23 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) fil
   </p>
 </div>
 
+
+## 📝 Changelog
+
+### Recent Updates
+- **UI Improvements**: Fixed horizontal overflow issues in session containers
+- **Enhanced Tool Widgets**: Added web search widget and improved tool result displays  
+- **Thinking Mode**: Added thinking mode selector to floating prompt input
+- **Claude Desktop Style**: Updated UI to match Claude Desktop's aesthetic
+- **Bug Fixes**: Resolved infinite spinner and session persistence issues
+- **GitHub Actions**: Added Claude Code GitHub actions for automation
+- **Model Selection**: Improved model selection with Opus support
+
+### Previous Updates
+- **Timeline & Checkpoints**: Visual session versioning and branching
+- **CC Agents**: Custom AI agents with sandboxed execution
+- **MCP Server Management**: Model Context Protocol server integration
+- **Usage Analytics**: Real-time cost and token tracking
 
 ## Star History
 
