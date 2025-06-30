@@ -102,6 +102,9 @@ Think of Claudia as your command center for Claude Code - bridging the gap betwe
 - **Syntax Highlighting**: Full markdown support with syntax highlighting
 
 ### 🚀 **Recent Improvements**
+- **Integrated Prompt Input**: Prompt input now moves with chat content when preview panel opens
+- **Improved Layout System**: Better container management for split-pane and normal views
+- **Enhanced Width**: Increased max-width for better content visibility (3xl → 5xl)
 - **Horizontal Overflow Fixes**: Better content containment preventing unwanted scrolling
 - **Enhanced Text Wrapping**: Long messages now wrap properly without being cut off
 - **Improved Code Block Scrolling**: Code blocks scroll independently within their containers
@@ -437,6 +440,7 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) fil
 ## 📝 Changelog
 
 ### Recent Updates
+- **Integrated Prompt Layout**: Prompt input now properly integrates with chat container for better preview panel behavior
 - **UI Improvements**: Fixed horizontal overflow issues in session containers
 - **Enhanced Tool Widgets**: Added web search widget and improved tool result displays  
 - **Thinking Mode**: Added thinking mode selector to floating prompt input
