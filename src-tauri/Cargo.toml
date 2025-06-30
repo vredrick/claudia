@@ -56,6 +56,11 @@ gaol = "0.2"
 cocoa = "0.26"
 objc = "0.2"
 
+[dev-dependencies]
+serial_test = "3"
+tempfile = "3"
+mockall = "0.13"
+
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]

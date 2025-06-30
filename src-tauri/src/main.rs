@@ -4,6 +4,7 @@
 mod checkpoint;
 mod claude_binary;
 mod commands;
+mod path_utils;
 mod process;
 mod sandbox;
 
@@ -51,6 +52,20 @@ use tauri::Manager;
 fn main() {
     // Initialize logger
     env_logger::init();
+
+    // Enhance PATH for macOS app bundles to locate Node.js
+    #[cfg(target_os = "macos")]
+    {
+        let common_paths = vec![
+            "/opt/homebrew/bin",
+            "/usr/local/bin",
+        ];
+
+        if let Some(enhanced_path) = path_utils::enhance_path_for_common_locations(&common_paths) {
+            log::info!("Enhanced PATH for macOS app bundle: {}", enhanced_path);
+            std::env::set_var("PATH", enhanced_path);
+        }
+    }
 
     // Check if we need to activate sandbox in this process
     if sandbox::executor::should_activate_sandbox() {

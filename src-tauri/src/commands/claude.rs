@@ -250,14 +250,13 @@ fn create_command_with_env(program: &str) -> Command {
     }
 
     // Add NVM support if the program is in an NVM directory
+    // Note: The std::process::Command from claude_binary already handles this,
+    // but we need to apply it to our tokio Command
     if program.contains("/.nvm/versions/node/") {
         if let Some(node_bin_dir) = std::path::Path::new(program).parent() {
-            let current_path = std::env::var("PATH").unwrap_or_default();
             let node_bin_str = node_bin_dir.to_string_lossy();
-            if !current_path.contains(&node_bin_str.as_ref()) {
-                let new_path = format!("{}:{}", node_bin_str, current_path);
-                tokio_cmd.env("PATH", new_path);
-            }
+            let enhanced_path = crate::path_utils::add_to_path_if_missing(&node_bin_str);
+            tokio_cmd.env("PATH", enhanced_path);
         }
     }
 
@@ -821,7 +820,7 @@ pub async fn execute_claude_code(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
-    spawn_claude_process(app, cmd).await
+    spawn_claude_process(app, cmd, None).await
 }
 
 /// Continue an existing Claude Code conversation with streaming output
@@ -861,7 +860,7 @@ pub async fn continue_claude_code(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
-    spawn_claude_process(app, cmd).await
+    spawn_claude_process(app, cmd, None).await
 }
 
 /// Resume an existing Claude Code session by ID with streaming output
@@ -904,7 +903,8 @@ pub async fn resume_claude_code(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
-    spawn_claude_process(app, cmd).await
+    // Pass the session ID to use for event emission
+    spawn_claude_process(app, cmd, Some(session_id)).await
 }
 
 /// Cancel the currently running Claude Code execution
@@ -1151,18 +1151,20 @@ fn get_claude_settings_sync(_app: &AppHandle) -> Result<ClaudeSettings, String> 
 }
 
 /// Helper function to spawn Claude process and handle streaming
-async fn spawn_claude_process(app: AppHandle, mut cmd: Command) -> Result<(), String> {
+async fn spawn_claude_process(app: AppHandle, mut cmd: Command, provided_session_id: Option<String>) -> Result<(), String> {
     use tokio::io::{AsyncBufReadExt, BufReader};
 
-    // Generate a unique session ID for this Claude Code session
-    let session_id = format!(
-        "claude-{}-{}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis(),
-        uuid::Uuid::new_v4().to_string()
-    );
+    // Use provided session ID if available, otherwise generate a unique one
+    let session_id = provided_session_id.unwrap_or_else(|| {
+        format!(
+            "claude-{}-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis(),
+            uuid::Uuid::new_v4().to_string()
+        )
+    });
 
     // Spawn the process
     let mut child = cmd

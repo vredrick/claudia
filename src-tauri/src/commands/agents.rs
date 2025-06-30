@@ -1921,29 +1921,23 @@ fn create_command_with_env(program: &str) -> Command {
     }
 
     // Add NVM support if the program is in an NVM directory
+    // Note: The std::process::Command from claude_binary already handles this,
+    // but we need to apply it to our tokio Command
     if program.contains("/.nvm/versions/node/") {
         if let Some(node_bin_dir) = std::path::Path::new(program).parent() {
-            let current_path = std::env::var("PATH").unwrap_or_default();
             let node_bin_str = node_bin_dir.to_string_lossy();
-            if !current_path.contains(&node_bin_str.as_ref()) {
-                let new_path = format!("{}:{}", node_bin_str, current_path);
-                tokio_cmd.env("PATH", new_path);
-            }
+            let enhanced_path = crate::path_utils::add_to_path_if_missing(&node_bin_str);
+            tokio_cmd.env("PATH", enhanced_path);
         }
     }
 
     // Ensure PATH contains common Homebrew locations
-    if let Ok(existing_path) = std::env::var("PATH") {
-        let mut paths: Vec<&str> = existing_path.split(':').collect();
-        for p in ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"].iter() {
-            if !paths.contains(p) {
-                paths.push(p);
-            }
-        }
-        let joined = paths.join(":");
-        tokio_cmd.env("PATH", joined);
+    let common_paths = vec!["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"];
+    if let Some(enhanced_path) = crate::path_utils::enhance_path_for_common_locations(&common_paths) {
+        tokio_cmd.env("PATH", enhanced_path);
     } else {
-        tokio_cmd.env("PATH", "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin");
+        // If PATH is not set at all, use a reasonable default
+        tokio_cmd.env("PATH", std::env::var("PATH").unwrap_or_else(|_| "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin".to_string()));
     }
 
     tokio_cmd

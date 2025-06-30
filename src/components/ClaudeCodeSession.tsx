@@ -185,9 +185,11 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
       extractedSessionInfo,
       effectiveSession,
       messagesCount: messages.length,
-      isLoading
+      isLoading,
+      isFirstPrompt,
+      claudeSessionId
     });
-  }, [projectPath, session, extractedSessionInfo, effectiveSession, messages.length, isLoading]);
+  }, [projectPath, session, extractedSessionInfo, effectiveSession, messages.length, isLoading, isFirstPrompt, claudeSessionId]);
 
   // Load session history if resuming
   useEffect(() => {
@@ -285,8 +287,9 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
       // Set up event listeners before executing
       console.log('[ClaudeCodeSession] Setting up event listeners...');
       
-      // If we already have a Claude session ID, use isolated listeners
-      const eventSuffix = claudeSessionId ? `:${claudeSessionId}` : '';
+      // Always listen to generic events since the backend emits both generic and session-specific
+      // We'll handle session-specific events after we get the session ID
+      const eventSuffix = '';
       
       const outputUnlisten = await listen<string>(`claude-output${eventSuffix}`, async (event) => {
         try {
@@ -306,21 +309,21 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
           
           // Extract session info from system init message
           if (message.type === "system" && message.subtype === "init" && message.session_id) {
-            console.log('[ClaudeCodeSession] Extracting session info from init message');
+            console.log('[ClaudeCodeSession] Extracting session info from init message:', message.session_id);
             // Extract project ID from the project path
             const projectId = projectPath.replace(/[^a-zA-Z0-9]/g, '-');
             
-            // Set both claudeSessionId and extractedSessionInfo
-            if (!claudeSessionId) {
-              setClaudeSessionId(message.session_id);
-            }
+            // Always update claudeSessionId if we receive a session ID
+            setClaudeSessionId(message.session_id);
             
-            if (!extractedSessionInfo) {
-              setExtractedSessionInfo({
-                sessionId: message.session_id,
-                projectId: projectId
-              });
-            }
+            // Always update extractedSessionInfo to ensure we have the latest session
+            setExtractedSessionInfo({
+              sessionId: message.session_id,
+              projectId: projectId
+            });
+            
+            // After first message with session ID, we're no longer on first prompt
+            setIsFirstPrompt(false);
           }
         } catch (err) {
           console.error("Failed to parse message:", err, event.payload);
@@ -333,7 +336,8 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
       });
 
       const completeUnlisten = await listen<boolean>(`claude-complete${eventSuffix}`, async (event) => {
-        console.log('[ClaudeCodeSession] Received claude-complete:', event.payload);
+        console.log('[ClaudeCodeSession] Received claude-complete:', event.payload, 'eventSuffix:', eventSuffix);
+        console.log('[ClaudeCodeSession] Setting isLoading to false');
         setIsLoading(false);
         hasActiveSessionRef.current = false;
         
@@ -379,12 +383,15 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
       setMessages(prev => [...prev, userMessage]);
 
       // Execute the appropriate command
-      if (effectiveSession && !isFirstPrompt) {
-        console.log('[ClaudeCodeSession] Resuming session:', effectiveSession.id);
-        await api.resumeClaudeCode(projectPath, effectiveSession.id, prompt, model);
+      // Use claudeSessionId if available (it's the actual Claude session ID)
+      // Otherwise use effectiveSession.id if resuming an existing session
+      const sessionIdToResume = claudeSessionId || effectiveSession?.id;
+      
+      if (sessionIdToResume && !isFirstPrompt) {
+        console.log('[ClaudeCodeSession] Resuming session:', sessionIdToResume);
+        await api.resumeClaudeCode(projectPath, sessionIdToResume, prompt, model);
       } else {
-        console.log('[ClaudeCodeSession] Starting new session');
-        setIsFirstPrompt(false);
+        console.log('[ClaudeCodeSession] Starting new session (isFirstPrompt:', isFirstPrompt, ', sessionId:', sessionIdToResume, ')');
         await api.executeClaudeCode(projectPath, prompt, model);
       }
     } catch (err) {

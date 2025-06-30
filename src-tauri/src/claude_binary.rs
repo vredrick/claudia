@@ -436,10 +436,11 @@ pub fn create_command_with_env(program: &str) -> Command {
     if program.contains("/.nvm/versions/node/") {
         if let Some(node_bin_dir) = std::path::Path::new(program).parent() {
             // Ensure the Node.js bin directory is in PATH
-            let current_path = std::env::var("PATH").unwrap_or_default();
             let node_bin_str = node_bin_dir.to_string_lossy();
-            if !current_path.contains(&node_bin_str.as_ref()) {
-                let new_path = format!("{}:{}", node_bin_str, current_path);
+            let new_path = crate::path_utils::add_to_path_if_missing(&node_bin_str);
+            
+            // Only set PATH if it was modified
+            if new_path != std::env::var("PATH").unwrap_or_default() {
                 debug!("Adding NVM bin directory to PATH: {}", node_bin_str);
                 cmd.env("PATH", new_path);
             }
