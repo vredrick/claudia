@@ -159,6 +159,20 @@ button[class*="bg-primary"]:hover:not(:disabled),
   border-color: #404040;
 }
 
+/* Thinking mode dropdown button styles */
+.thinking-mode-button {
+  background-color: var(--color-popover); /* Same as dropdown panel */
+  transition: background-color 0.2s ease;
+}
+
+.thinking-mode-button:hover {
+  background-color: rgba(128, 128, 128, 0.3) !important; /* Semi-dark grey */
+}
+
+.thinking-mode-button.active {
+  background-color: rgba(64, 64, 64, 0.5) !important; /* Dark grey for active */
+}
+
 /* Input enhancements */
 input,
 select {

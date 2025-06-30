@@ -560,7 +560,7 @@ const FloatingPromptInputInner = (
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setThinkingModePickerOpen(!thinkingModePickerOpen)}
-                                className="gap-2"
+                                className="gap-2 thinking-mode-button"
                               >
                                 <Brain className="h-4 w-4" />
                                 <ThinkingModeIndicator 
@@ -585,9 +585,8 @@ const FloatingPromptInputInner = (
                                 setThinkingModePickerOpen(false);
                               }}
                               className={cn(
-                                "w-full flex items-start gap-3 p-3 rounded-md transition-colors text-left",
-                                "hover:bg-accent",
-                                selectedThinkingMode === mode.id && "bg-accent"
+                                "w-full flex items-start gap-3 p-3 rounded-md text-left thinking-mode-button",
+                                selectedThinkingMode === mode.id && "active"
                               )}
                             >
                               <Brain className="h-4 w-4 mt-0.5" />
@@ -702,7 +701,7 @@ const FloatingPromptInputInner = (
                       <TooltipTrigger asChild>
                         <button
                           disabled={isLoading || disabled}
-                          className="flex items-center gap-1.5 px-2 py-1.5 text-sm hover:bg-accent rounded-md transition-colors"
+                          className="flex items-center gap-1.5 px-2 py-1.5 text-sm rounded-md transition-colors thinking-mode-button"
                         >
                           <Brain className="h-3.5 w-3.5" />
                           <ThinkingModeIndicator 
@@ -727,9 +726,8 @@ const FloatingPromptInputInner = (
                           setThinkingModePickerOpen(false);
                         }}
                         className={cn(
-                          "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm",
-                          "hover:bg-accent",
-                          selectedThinkingMode === mode.id && "bg-accent"
+                          "w-full flex items-center gap-2 px-3 py-2 rounded-md text-left text-sm thinking-mode-button",
+                          selectedThinkingMode === mode.id && "active"
                         )}
                       >
                         <Brain className="h-3.5 w-3.5" />
@@ -760,7 +758,7 @@ const FloatingPromptInputInner = (
                   trigger={
                     <button
                       disabled={isLoading || disabled}
-                      className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-foreground hover:bg-accent rounded-md transition-colors"
+                      className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-foreground rounded-md transition-colors thinking-mode-button"
                     >
                       <span>{selectedModelData.name}</span>
                       <ChevronDown className="h-3 w-3 opacity-50" />
@@ -776,9 +774,8 @@ const FloatingPromptInputInner = (
                             setModelPickerOpen(false);
                           }}
                           className={cn(
-                            "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm",
-                            "hover:bg-accent",
-                            selectedModel === model.id && "bg-accent"
+                            "w-full flex items-center gap-2 px-3 py-2 rounded-md text-left text-sm thinking-mode-button",
+                            selectedModel === model.id && "active"
                           )}
                         >
                           {model.icon}
