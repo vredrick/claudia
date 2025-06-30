@@ -4,7 +4,7 @@
  */
 export const claudeSyntaxTheme: any = {
   'code[class*="language-"]': {
-    color: '#e3e8f0',
+    color: '#e0e0e0',
     background: 'transparent',
     textShadow: 'none',
     fontFamily: 'var(--font-mono)',
@@ -24,7 +24,7 @@ export const claudeSyntaxTheme: any = {
     hyphens: 'none',
   },
   'pre[class*="language-"]': {
-    color: '#e3e8f0',
+    color: '#e0e0e0',
     background: 'transparent',
     textShadow: 'none',
     fontFamily: 'var(--font-mono)',
@@ -47,100 +47,100 @@ export const claudeSyntaxTheme: any = {
     overflow: 'auto',
   },
   ':not(pre) > code[class*="language-"]': {
-    background: 'rgba(139, 92, 246, 0.1)',
+    background: 'rgba(255, 107, 53, 0.1)',
     padding: '0.1em 0.3em',
     borderRadius: '0.3em',
     whiteSpace: 'normal',
   },
   'comment': {
-    color: '#6b7280',
+    color: '#71717a',
     fontStyle: 'italic',
   },
   'prolog': {
-    color: '#6b7280',
+    color: '#71717a',
   },
   'doctype': {
-    color: '#6b7280',
+    color: '#71717a',
   },
   'cdata': {
-    color: '#6b7280',
+    color: '#71717a',
   },
   'punctuation': {
-    color: '#9ca3af',
+    color: '#a1a1aa',
   },
   'namespace': {
     opacity: '0.7',
   },
   'property': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fb923c', // Vibrant Orange
   },
   'tag': {
-    color: '#8b5cf6', // Violet
+    color: '#a78bfa', // Bright Purple
   },
   'boolean': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fb923c', // Vibrant Orange
   },
   'number': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fbbf24', // Bright Yellow
   },
   'constant': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fb923c', // Vibrant Orange
   },
   'symbol': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fb923c', // Vibrant Orange
   },
   'deleted': {
-    color: '#ef4444',
+    color: '#f87171',
   },
   'selector': {
-    color: '#a78bfa', // Light Purple
+    color: '#c084fc', // Bright Light Purple
   },
   'attr-name': {
-    color: '#a78bfa', // Light Purple
+    color: '#c084fc', // Bright Light Purple
   },
   'string': {
-    color: '#10b981', // Emerald Green
+    color: '#4ade80', // Bright Green
   },
   'char': {
-    color: '#10b981', // Emerald Green
+    color: '#4ade80', // Bright Green
   },
   'builtin': {
-    color: '#8b5cf6', // Violet
+    color: '#a78bfa', // Bright Purple
   },
   'url': {
-    color: '#10b981', // Emerald Green
+    color: '#4ade80', // Bright Green
   },
   'inserted': {
-    color: '#10b981', // Emerald Green
+    color: '#4ade80', // Bright Green
   },
   'entity': {
-    color: '#a78bfa', // Light Purple
+    color: '#c084fc', // Bright Light Purple
     cursor: 'help',
   },
   'atrule': {
-    color: '#c084fc', // Light Violet
+    color: '#e879f9', // Bright Magenta
   },
   'attr-value': {
-    color: '#10b981', // Emerald Green
+    color: '#4ade80', // Bright Green
   },
   'keyword': {
-    color: '#c084fc', // Light Violet
+    color: '#e879f9', // Bright Magenta
   },
   'function': {
-    color: '#818cf8', // Indigo
+    color: '#93c5fd', // Bright Blue
   },
   'class-name': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fbbf24', // Bright Yellow
   },
   'regex': {
-    color: '#06b6d4', // Cyan
+    color: '#22d3ee', // Bright Cyan
   },
   'important': {
-    color: '#f59e0b', // Amber/Orange
+    color: '#fb923c', // Vibrant Orange
     fontWeight: 'bold',
   },
   'variable': {
-    color: '#a78bfa', // Light Purple
+    color: '#c084fc', // Bright Light Purple
   },
   'bold': {
     fontWeight: 'bold',
@@ -152,7 +152,7 @@ export const claudeSyntaxTheme: any = {
     color: '#9ca3af',
   },
   'script': {
-    color: '#e3e8f0',
+    color: '#e0e0e0',
   },
   'parameter': {
     color: '#fbbf24', // Yellow

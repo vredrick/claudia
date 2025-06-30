@@ -620,7 +620,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
       }}
     >
       <div
-        className="relative w-full max-w-5xl mx-auto px-4 py-4"
+        className="relative w-full py-4"
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
         }}
@@ -637,7 +637,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="absolute inset-x-4 pb-4"
+                className="absolute inset-x-0 pb-4"
                 style={{
                   top: virtualItem.start,
                 }}
@@ -890,7 +890,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             />
           ) : (
             // Original layout when no preview
-            <div className="h-full flex flex-col max-w-5xl mx-auto">
+            <div className="h-full flex flex-col max-w-3xl mx-auto px-4">
               {projectPathInput}
               {messagesList}
             </div>

@@ -106,11 +106,10 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
       let renderedSomething = false;
       
       const renderedCard = (
-        <Card className={cn("border-primary/20 bg-primary/5", className)}>
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Bot className="h-5 w-5 text-primary mt-0.5" />
-              <div className="flex-1 space-y-2 min-w-0">
+        <div className={cn("mb-6", className)}>
+          <div className="flex items-start gap-3">
+            <Bot className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="flex-1 space-y-3 min-w-0">
                 {msg.content && Array.isArray(msg.content) && msg.content.map((content: any, idx: number) => {
                   // Text content - render as markdown
                   if (content.type === "text") {
@@ -262,9 +261,9 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                     return (
                       <div key={idx} className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Terminal className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">
-                            Using tool: <code className="font-mono">{content.name}</code>
+                          <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Using tool: <code className="font-mono text-xs">{content.name}</code>
                           </span>
                         </div>
                         {content.input && (
@@ -282,14 +281,13 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                 })}
                 
                 {msg.usage && (
-                  <div className="text-xs text-muted-foreground mt-2">
+                  <div className="text-xs text-muted-foreground mt-2 opacity-60">
                     Tokens: {msg.usage.input_tokens} in, {msg.usage.output_tokens} out
                   </div>
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
       );
       
       if (!renderedSomething) return null;
@@ -307,11 +305,10 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
       let renderedSomething = false;
       
       const renderedCard = (
-        <Card className={cn("border-muted-foreground/20 bg-muted/20", className)}>
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1 space-y-2 min-w-0">
+        <div className={cn("mb-6 bg-secondary/20 rounded-lg px-4 py-3", className)}>
+          <div className="flex items-start gap-3">
+            <User className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div className="flex-1 space-y-2 min-w-0">
                 {/* Handle content that is a simple string (e.g. from user commands) */}
                 {(typeof msg.content === 'string' || (msg.content && !Array.isArray(msg.content))) && (
                   (() => {
@@ -609,8 +606,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                 })}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
       );
       if (!renderedSomething) return null;
       return renderedCard;
@@ -689,8 +685,8 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       );
     }
 

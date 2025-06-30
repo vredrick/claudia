@@ -118,8 +118,8 @@ const ThinkingModeIndicator: React.FC<{ level: number }> = ({ level }) => {
         <div
           key={i}
           className={cn(
-            "w-1 h-3 rounded-full transition-colors",
-            i <= level ? "bg-blue-500" : "bg-muted"
+            "w-0.5 h-2.5 rounded-full transition-colors",
+            i <= level ? "bg-primary" : "bg-muted"
           )}
         />
       ))}
@@ -631,7 +631,7 @@ const FloatingPromptInputInner = (
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {/* Image previews */}
           {embeddedImages.length > 0 && (
             <ImagePreview
@@ -641,24 +641,22 @@ const FloatingPromptInputInner = (
             />
           )}
 
-          <div className="p-4">
-            <div className="flex items-end gap-3">
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-2">
               {/* Model Picker */}
               <Popover
                 trigger={
-                  <Button
-                    variant="outline"
-                    size="default"
+                  <button
                     disabled={isLoading || disabled}
-                    className="gap-2 min-w-[180px] justify-start"
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent rounded-md transition-colors"
                   >
                     {selectedModelData.icon}
-                    <span className="flex-1 text-left">{selectedModelData.name}</span>
-                    <ChevronUp className="h-4 w-4 opacity-50" />
-                  </Button>
+                    <span>{selectedModelData.name}</span>
+                    <ChevronUp className="h-3 w-3 opacity-50" />
+                  </button>
                 }
                 content={
-                  <div className="w-[300px] p-1">
+                  <div className="w-[240px] p-1">
                     {MODELS.map((model) => (
                       <button
                         key={model.id}
@@ -667,14 +665,14 @@ const FloatingPromptInputInner = (
                           setModelPickerOpen(false);
                         }}
                         className={cn(
-                          "w-full flex items-start gap-3 p-3 rounded-md transition-colors text-left",
+                          "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm",
                           "hover:bg-accent",
                           selectedModel === model.id && "bg-accent"
                         )}
                       >
-                        <div className="mt-0.5">{model.icon}</div>
-                        <div className="flex-1 space-y-1">
-                          <div className="font-medium text-sm">{model.name}</div>
+                        {model.icon}
+                        <div className="flex-1">
+                          <div className="font-medium">{model.name}</div>
                           <div className="text-xs text-muted-foreground">
                             {model.description}
                           </div>
@@ -695,17 +693,15 @@ const FloatingPromptInputInner = (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="default"
+                        <button
                           disabled={isLoading || disabled}
-                          className="gap-2"
+                          className="flex items-center gap-1.5 px-2 py-1.5 text-sm hover:bg-accent rounded-md transition-colors"
                         >
-                          <Brain className="h-4 w-4" />
+                          <Brain className="h-3.5 w-3.5" />
                           <ThinkingModeIndicator 
                             level={THINKING_MODES.find(m => m.id === selectedThinkingMode)?.level || 0} 
                           />
-                        </Button>
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="font-medium">{THINKING_MODES.find(m => m.id === selectedThinkingMode)?.name || "Auto"}</p>
@@ -715,7 +711,7 @@ const FloatingPromptInputInner = (
                   </TooltipProvider>
                 }
                 content={
-                  <div className="w-[280px] p-1">
+                  <div className="w-[220px] p-1">
                     {THINKING_MODES.map((mode) => (
                       <button
                         key={mode.id}
@@ -724,14 +720,14 @@ const FloatingPromptInputInner = (
                           setThinkingModePickerOpen(false);
                         }}
                         className={cn(
-                          "w-full flex items-start gap-3 p-3 rounded-md transition-colors text-left",
+                          "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm",
                           "hover:bg-accent",
                           selectedThinkingMode === mode.id && "bg-accent"
                         )}
                       >
-                        <Brain className="h-4 w-4 mt-0.5" />
-                        <div className="flex-1 space-y-1">
-                          <div className="font-medium text-sm">
+                        <Brain className="h-3.5 w-3.5" />
+                        <div className="flex-1">
+                          <div className="font-medium">
                             {mode.name}
                           </div>
                           <div className="text-xs text-muted-foreground">
@@ -756,24 +752,22 @@ const FloatingPromptInputInner = (
                   value={prompt}
                   onChange={handleTextChange}
                   onKeyDown={handleKeyDown}
-                  placeholder={dragActive ? "Drop images here..." : "Ask Claude anything..."}
+                  placeholder={dragActive ? "Drop images here..." : "Reply to Claude..."}
                   disabled={isLoading || disabled}
                   className={cn(
-                    "min-h-[44px] max-h-[120px] resize-none pr-10",
+                    "min-h-[40px] max-h-[100px] resize-none pr-10 py-2 text-sm",
                     dragActive && "border-primary"
                   )}
                   rows={1}
                 />
 
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
                   onClick={() => setIsExpanded(true)}
                   disabled={isLoading || disabled}
-                  className="absolute right-1 bottom-1 h-8 w-8"
+                  className="absolute right-1.5 bottom-1.5 p-1.5 hover:bg-accent rounded transition-colors"
                 >
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
+                  <Maximize2 className="h-3.5 w-3.5" />
+                </button>
 
                 {/* File Picker */}
                 <AnimatePresence>
@@ -789,25 +783,28 @@ const FloatingPromptInputInner = (
               </div>
 
               {/* Send/Stop Button */}
-              <Button
+              <button
                 onClick={isLoading ? onCancel : handleSend}
                 disabled={isLoading ? false : (!prompt.trim() || disabled)}
-                variant={isLoading ? "destructive" : "default"}
-                size="default"
-                className="min-w-[60px]"
+                className={cn(
+                  "px-3 py-1.5 rounded-md transition-all font-medium text-sm",
+                  isLoading 
+                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
               >
                 {isLoading ? (
                   <>
-                    <Square className="h-4 w-4 mr-1" />
+                    <Square className="h-3.5 w-3.5 inline mr-1" />
                     Stop
                   </>
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-3.5 w-3.5" />
                 )}
-              </Button>
+              </button>
             </div>
 
-            <div className="mt-2 text-xs text-muted-foreground">
+            <div className="mt-1.5 text-xs text-muted-foreground">
               Press Enter to send, Shift+Enter for new line{projectPath?.trim() && ", @ to mention files, drag & drop images"}
             </div>
           </div>

@@ -58,31 +58,40 @@ import { open } from "@tauri-apps/plugin-shell";
  * Widget for TodoWrite tool - displays a beautiful TODO list
  */
 export const TodoWidget: React.FC<{ todos: any[]; result?: any }> = ({ todos, result: _result }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   const statusIcons = {
-    completed: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-    in_progress: <Clock className="h-4 w-4 text-blue-500 animate-pulse" />,
-    pending: <Circle className="h-4 w-4 text-muted-foreground" />
+    completed: <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />,
+    in_progress: <Clock className="h-3.5 w-3.5 text-primary animate-pulse" />,
+    pending: <Circle className="h-3.5 w-3.5 text-muted-foreground" />
   };
 
   const priorityColors = {
-    high: "bg-red-500/10 text-red-500 border-red-500/20",
-    medium: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-    low: "bg-green-500/10 text-green-500 border-green-500/20"
+    high: "bg-red-500/5 text-red-500 border-red-500/10",
+    medium: "bg-yellow-500/5 text-yellow-500 border-yellow-500/10",
+    low: "bg-green-500/5 text-green-500 border-green-500/10"
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 mb-3">
-        <FileEdit className="h-4 w-4 text-primary" />
-        <span className="text-sm font-medium">Todo List</span>
-      </div>
+    <div className="rounded-lg border border-border bg-card/50 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left"
+      >
+        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+        <FileEdit className="h-3.5 w-3.5 text-primary" />
+        <span className="text-sm font-medium text-muted-foreground">Todo List</span>
+        <span className="text-xs text-muted-foreground ml-auto">{todos.length} items</span>
+      </button>
+      {isExpanded && (
+        <div className="px-3 py-2 border-t border-border">
       <div className="space-y-2">
         {todos.map((todo, idx) => (
           <div
             key={todo.id || idx}
             className={cn(
-              "flex items-start gap-3 p-3 rounded-lg border bg-card/50",
-              todo.status === "completed" && "opacity-60"
+              "flex items-start gap-3 p-2.5 rounded-md border bg-card/30",
+              todo.status === "completed" && "opacity-50"
             )}
           >
             <div className="mt-0.5">
@@ -106,7 +115,8 @@ export const TodoWidget: React.FC<{ todos: any[]; result?: any }> = ({ todos, re
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -115,9 +125,11 @@ export const TodoWidget: React.FC<{ todos: any[]; result?: any }> = ({ todos, re
  * Widget for LS (List Directory) tool
  */
 export const LSWidget: React.FC<{ path: string; result?: any }> = ({ path, result }) => {
-  // If we have a result, show it using the LSResultWidget
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Extract result content if available
+  let resultContent = '';
   if (result) {
-    let resultContent = '';
     if (typeof result.content === 'string') {
       resultContent = result.content;
     } else if (result.content && typeof result.content === 'object') {
@@ -131,32 +143,28 @@ export const LSWidget: React.FC<{ path: string; result?: any }> = ({ path, resul
         resultContent = JSON.stringify(result.content, null, 2);
       }
     }
-    
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-          <FolderOpen className="h-4 w-4 text-primary" />
-          <span className="text-sm">Directory contents for:</span>
-          <code className="text-sm font-mono bg-background px-2 py-0.5 rounded">
-            {path}
-          </code>
-        </div>
-        {resultContent && <LSResultWidget content={resultContent} />}
-      </div>
-    );
   }
   
   return (
-    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-      <FolderOpen className="h-4 w-4 text-primary" />
-      <span className="text-sm">Listing directory:</span>
-      <code className="text-sm font-mono bg-background px-2 py-0.5 rounded">
-        {path}
-      </code>
-      {!result && (
-        <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-          <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
-          <span>Loading...</span>
+    <div className="rounded-lg border border-border bg-card/50 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left"
+      >
+        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+        <FolderOpen className="h-3.5 w-3.5 text-primary" />
+        <span className="text-sm text-muted-foreground">LS</span>
+        <code className="text-xs font-mono text-muted-foreground flex-1 truncate">{path}</code>
+        {!result && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
+            <span>Loading...</span>
+          </div>
+        )}
+      </button>
+      {isExpanded && result && resultContent && (
+        <div className="border-t border-border">
+          <LSResultWidget content={resultContent} />
         </div>
       )}
     </div>
@@ -258,8 +266,8 @@ export const LSResultWidget: React.FC<{ content: string }> = ({ content }) => {
     const getIcon = () => {
       if (entry.type === 'directory') {
         return isExpanded ? 
-          <FolderOpen className="h-3.5 w-3.5 text-blue-500" /> : 
-          <Folder className="h-3.5 w-3.5 text-blue-500" />;
+          <FolderOpen className="h-3.5 w-3.5 text-primary" /> : 
+          <Folder className="h-3.5 w-3.5 text-primary" />;
       }
       
       // File type icons based on extension
@@ -273,14 +281,14 @@ export const LSResultWidget: React.FC<{ content: string }> = ({ content }) => {
         case 'json':
           return <FileText className="h-3.5 w-3.5 text-yellow-500" />;
         case 'md':
-          return <FileText className="h-3.5 w-3.5 text-blue-400" />;
+          return <FileText className="h-3.5 w-3.5 text-primary" />;
         case 'js':
         case 'jsx':
         case 'ts':
         case 'tsx':
           return <FileCode className="h-3.5 w-3.5 text-yellow-400" />;
         case 'py':
-          return <FileCode className="h-3.5 w-3.5 text-blue-500" />;
+          return <FileCode className="h-3.5 w-3.5 text-primary" />;
         case 'go':
           return <FileCode className="h-3.5 w-3.5 text-cyan-500" />;
         case 'sh':
@@ -338,9 +346,11 @@ export const LSResultWidget: React.FC<{ content: string }> = ({ content }) => {
  * Widget for Read tool
  */
 export const ReadWidget: React.FC<{ filePath: string; result?: any }> = ({ filePath, result }) => {
-  // If we have a result, show it using the ReadResultWidget
+  const [isExpanded, setIsExpanded] = useState(true); // Default expanded for read
+  
+  // Extract result content if available
+  let resultContent = '';
   if (result) {
-    let resultContent = '';
     if (typeof result.content === 'string') {
       resultContent = result.content;
     } else if (result.content && typeof result.content === 'object') {
@@ -354,32 +364,28 @@ export const ReadWidget: React.FC<{ filePath: string; result?: any }> = ({ fileP
         resultContent = JSON.stringify(result.content, null, 2);
       }
     }
-    
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-          <FileText className="h-4 w-4 text-primary" />
-          <span className="text-sm">File content:</span>
-          <code className="text-sm font-mono bg-background px-2 py-0.5 rounded flex-1 truncate">
-            {filePath}
-          </code>
-        </div>
-        {resultContent && <ReadResultWidget content={resultContent} filePath={filePath} />}
-      </div>
-    );
   }
   
   return (
-    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-      <FileText className="h-4 w-4 text-primary" />
-      <span className="text-sm">Reading file:</span>
-      <code className="text-sm font-mono bg-background px-2 py-0.5 rounded flex-1 truncate">
-        {filePath}
-      </code>
-      {!result && (
-        <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-          <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
-          <span>Loading...</span>
+    <div className="rounded-lg border border-border bg-card/50 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left"
+      >
+        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+        <FileText className="h-3.5 w-3.5 text-primary" />
+        <span className="text-sm text-muted-foreground">Read</span>
+        <code className="text-xs font-mono text-muted-foreground flex-1 truncate">{filePath}</code>
+        {!result && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
+            <span>Loading...</span>
+          </div>
+        )}
+      </button>
+      {isExpanded && result && resultContent && (
+        <div className="border-t border-border">
+          <ReadResultWidget content={resultContent} filePath={filePath} />
         </div>
       )}
     </div>
@@ -560,6 +566,8 @@ export const ReadResultWidget: React.FC<{ content: string; filePath?: string }> 
  * Widget for Glob tool
  */
 export const GlobWidget: React.FC<{ pattern: string; result?: any }> = ({ pattern, result }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   // Extract result content if available
   let resultContent = '';
   let isError = false;
@@ -582,30 +590,32 @@ export const GlobWidget: React.FC<{ pattern: string; result?: any }> = ({ patter
   }
   
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-        <Search className="h-4 w-4 text-primary" />
-        <span className="text-sm">Searching for pattern:</span>
-        <code className="text-sm font-mono bg-background px-2 py-0.5 rounded">
-          {pattern}
-        </code>
+    <div className="rounded-lg border border-border bg-card/50 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left"
+      >
+        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+        <Search className="h-3.5 w-3.5 text-primary" />
+        <span className="text-sm text-muted-foreground">Glob</span>
+        <code className="text-xs font-mono text-muted-foreground flex-1 truncate">{pattern}</code>
         {!result && (
-          <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-            <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
             <span>Searching...</span>
           </div>
         )}
-      </div>
-      
-      {/* Show result if available */}
-      {result && (
-        <div className={cn(
-          "p-3 rounded-md border text-xs font-mono whitespace-pre-wrap overflow-x-auto",
-          isError 
-            ? "border-red-500/20 bg-red-500/5 text-red-400" 
-            : "border-green-500/20 bg-green-500/5 text-green-300"
-        )}>
-          {resultContent || (isError ? "Search failed" : "No matches found")}
+      </button>
+      {isExpanded && result && (
+        <div className="border-t border-border">
+          <div className={cn(
+            "p-3 text-xs font-mono whitespace-pre-wrap overflow-x-auto",
+            isError 
+              ? "text-red-400 bg-red-500/5" 
+              : "text-green-300 bg-green-500/5"
+          )}>
+            {resultContent || (isError ? "Search failed" : "No matches found")}
+          </div>
         </div>
       )}
     </div>
@@ -620,6 +630,8 @@ export const BashWidget: React.FC<{
   description?: string;
   result?: any;
 }> = ({ command, description, result }) => {
+  const [isExpanded, setIsExpanded] = useState(true); // Default expanded for bash
+  
   // Extract result content if available
   let resultContent = '';
   let isError = false;
@@ -642,41 +654,42 @@ export const BashWidget: React.FC<{
   }
   
   return (
-    <div className="rounded-lg border bg-zinc-950 overflow-hidden">
-      <div className="px-4 py-2 bg-zinc-900/50 flex items-center gap-2 border-b">
+    <div className="rounded-lg border border-border bg-card/50 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left"
+      >
+        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
         <Terminal className="h-3.5 w-3.5 text-green-500" />
-        <span className="text-xs font-mono text-muted-foreground">Terminal</span>
+        <span className="text-sm text-muted-foreground">Bash</span>
         {description && (
-          <>
-            <ChevronRight className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{description}</span>
-          </>
+          <span className="text-xs text-muted-foreground ml-1">• {description}</span>
         )}
-        {/* Show loading indicator when no result yet */}
+        <code className="text-xs font-mono text-muted-foreground flex-1 truncate ml-2">$ {command}</code>
         {!result && (
-          <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
             <span>Running...</span>
           </div>
         )}
-      </div>
-      <div className="p-4 space-y-3">
-        <code className="text-xs font-mono text-green-400 block">
-          $ {command}
-        </code>
+      </button>
+      {isExpanded && (
+        <div className="border-t border-border bg-zinc-950/30 p-3 space-y-3">
+          <code className="text-xs font-mono text-green-400 block">
+            $ {command}
+          </code>
         
-        {/* Show result if available */}
-        {result && (
-          <div className={cn(
-            "mt-3 p-3 rounded-md border text-xs font-mono whitespace-pre-wrap overflow-x-auto",
-            isError 
-              ? "border-red-500/20 bg-red-500/5 text-red-400" 
-              : "border-green-500/20 bg-green-500/5 text-green-300"
-          )}>
-            {resultContent || (isError ? "Command failed" : "Command completed")}
-          </div>
-        )}
-      </div>
+          {/* Show result if available */}
+          {result && (
+            <div className={cn(
+              "text-xs font-mono whitespace-pre-wrap overflow-x-auto",
+              isError ? "text-red-400" : "text-green-300"
+            )}>
+              {resultContent || (isError ? "Command failed" : "Command completed")}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -1028,7 +1041,7 @@ export const GrepWidget: React.FC<{
                           
                           <div className="flex-1 space-y-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-blue-400 truncate">
+                              <span className="text-xs font-medium text-primary truncate">
                                 {fileName}
                               </span>
                               {dirPath && (
@@ -1112,6 +1125,7 @@ export const EditWidget: React.FC<{
   new_string: string;
   result?: any;
 }> = ({ file_path, old_string, new_string, result: _result }) => {
+  const [isExpanded, setIsExpanded] = useState(true); // Default expanded for edits
 
   const diffResult = Diff.diffLines(old_string || '', new_string || '', { 
     newlineIsToken: true,
@@ -1120,17 +1134,21 @@ export const EditWidget: React.FC<{
   const language = getLanguage(file_path);
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 mb-2">
-        <FileEdit className="h-4 w-4 text-primary" />
-        <span className="text-sm font-medium">Applying Edit to:</span>
-        <code className="text-sm font-mono bg-background px-2 py-0.5 rounded flex-1 truncate">
-          {file_path}
-        </code>
-      </div>
+    <div className="rounded-lg border border-border bg-card/50 overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left"
+      >
+        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+        <FileEdit className="h-3.5 w-3.5 text-primary" />
+        <span className="text-sm text-muted-foreground">Edit</span>
+        <code className="text-xs font-mono text-muted-foreground flex-1 truncate">{file_path}</code>
+      </button>
 
-      <div className="rounded-lg border bg-zinc-950 overflow-hidden text-xs font-mono">
-        <div className="max-h-[440px] overflow-y-auto overflow-x-auto">
+      {isExpanded && (
+        <div className="border-t border-border">
+          <div className="bg-zinc-950/50 text-xs font-mono">
+            <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
           {diffResult.map((part, index) => {
             const partClass = part.added 
               ? 'bg-green-950/20' 
@@ -1177,8 +1195,10 @@ export const EditWidget: React.FC<{
               </div>
             );
           })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -1445,8 +1465,8 @@ export const CommandWidget: React.FC<{
   return (
     <div className="rounded-lg border bg-zinc-950/50 overflow-hidden">
       <div className="px-4 py-2 border-b bg-zinc-900/50 flex items-center gap-2">
-        <Terminal className="h-3.5 w-3.5 text-blue-500" />
-        <span className="text-xs font-mono text-blue-400">Command</span>
+        <Terminal className="h-3.5 w-3.5 text-primary" />
+        <span className="text-xs font-mono text-primary">Command</span>
       </div>
       <div className="p-3 space-y-1">
         <div className="flex items-center gap-2">
@@ -1545,15 +1565,15 @@ export const SummaryWidget: React.FC<{
   leafUuid?: string;
 }> = ({ summary, leafUuid }) => {
   return (
-    <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 overflow-hidden">
+    <div className="rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
       <div className="px-4 py-3 flex items-start gap-3">
         <div className="mt-0.5">
-          <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-            <Info className="h-4 w-4 text-blue-500" />
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Info className="h-4 w-4 text-primary" />
           </div>
         </div>
         <div className="flex-1 space-y-1">
-          <div className="text-xs font-medium text-blue-600 dark:text-blue-400">AI Summary</div>
+          <div className="text-xs font-medium text-primary">AI Summary</div>
           <p className="text-sm text-foreground">{summary}</p>
           {leafUuid && (
             <div className="text-xs text-muted-foreground mt-2">
@@ -1585,8 +1605,8 @@ export const MultiEditWidget: React.FC<{
       </div>
       <div className="ml-6 space-y-2">
         <div className="flex items-center gap-2">
-          <FileText className="h-3 w-3 text-blue-500" />
-          <code className="text-xs font-mono text-blue-500">{file_path}</code>
+          <FileText className="h-3 w-3 text-primary" />
+          <code className="text-xs font-mono text-primary">{file_path}</code>
         </div>
         
         <div className="space-y-1">
@@ -1753,7 +1773,7 @@ export const MultiEditResultWidget: React.FC<{
 export const SystemReminderWidget: React.FC<{ message: string }> = ({ message }) => {
   // Extract icon based on message content
   let icon = <Info className="h-4 w-4" />;
-  let colorClass = "border-blue-500/20 bg-blue-500/5 text-blue-600";
+  let colorClass = "border-primary/20 bg-primary/5 text-primary";
   
   if (message.toLowerCase().includes("warning")) {
     icon = <AlertCircle className="h-4 w-4" />;
@@ -1852,10 +1872,10 @@ export const SystemInitializedWidget: React.FC<{
   }, {} as Record<string, string[]>);
   
   return (
-    <Card className="border-blue-500/20 bg-blue-500/5">
+    <Card className="border-primary/20 bg-primary/5">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <Settings className="h-5 w-5 text-blue-500 mt-0.5" />
+          <Settings className="h-5 w-5 text-primary mt-0.5" />
           <div className="flex-1 space-y-4">
             <h4 className="font-semibold text-sm">System Initialized</h4>
             
@@ -2134,9 +2154,9 @@ export const WebSearchWidget: React.FC<{
   return (
     <div className="flex flex-col gap-2">
       {/* Subtle Search Query Header */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/5 border border-blue-500/10">
-        <Globe className="h-4 w-4 text-blue-500/70" />
-        <span className="text-xs font-medium uppercase tracking-wider text-blue-600/70 dark:text-blue-400/70">Web Search</span>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
+        <Globe className="h-4 w-4 text-primary/70" />
+        <span className="text-xs font-medium uppercase tracking-wider text-primary/70">Web Search</span>
         <span className="text-sm text-muted-foreground/80 flex-1 truncate">{query}</span>
       </div>
       
@@ -2146,9 +2166,9 @@ export const WebSearchWidget: React.FC<{
           {!searchResults.sections.length ? (
             <div className="px-3 py-2 flex items-center gap-2 text-muted-foreground">
               <div className="animate-pulse flex items-center gap-1">
-                <div className="h-1 w-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="h-1 w-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="h-1 w-1 bg-blue-500 rounded-full animate-bounce"></div>
+                <div className="h-1 w-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="h-1 w-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="h-1 w-1 bg-primary rounded-full animate-bounce"></div>
               </div>
               <span className="text-sm">Searching...</span>
             </div>
@@ -2195,12 +2215,12 @@ export const WebSearchWidget: React.FC<{
                             <button
                               key={linkIdx}
                               onClick={() => handleLinkClick(link.url)}
-                              className="group flex flex-col gap-0.5 p-2.5 rounded-md border bg-card/30 hover:bg-card/50 hover:border-blue-500/30 transition-all text-left"
+                              className="group flex flex-col gap-0.5 p-2.5 rounded-md border bg-card/30 hover:bg-card/50 hover:border-primary/30 transition-all text-left"
                             >
                               <div className="flex items-start gap-2">
-                                <Globe2 className="h-3.5 w-3.5 text-blue-500/70 mt-0.5 flex-shrink-0" />
+                                <Globe2 className="h-3.5 w-3.5 text-primary/70 mt-0.5 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium group-hover:text-blue-500 transition-colors line-clamp-2">
+                                  <div className="text-sm font-medium group-hover:text-primary transition-colors line-clamp-2">
                                     {link.title}
                                   </div>
                                   <div className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -2221,9 +2241,9 @@ export const WebSearchWidget: React.FC<{
                                 e.stopPropagation();
                                 handleLinkClick(link.url);
                               }}
-                              className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/10 hover:border-blue-500/20 transition-all"
+                              className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 transition-all"
                             >
-                              <Globe2 className="h-3 w-3 text-blue-500/70" />
+                              <Globe2 className="h-3 w-3 text-primary/70" />
                               <span className="truncate max-w-[180px] text-foreground/70 group-hover:text-foreground/90">
                                 {link.title}
                               </span>
