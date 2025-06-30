@@ -43,12 +43,13 @@ interface StreamMessageProps {
   className?: string;
   streamMessages: ClaudeStreamMessage[];
   onLinkDetected?: (url: string) => void;
+  showProfileIcon?: boolean;
 }
 
 /**
  * Component to render a single Claude Code stream message
  */
-const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, className, streamMessages, onLinkDetected }) => {
+const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, className, streamMessages, onLinkDetected, showProfileIcon = true }) => {
   // State to track tool results mapped by tool call ID
   const [toolResults, setToolResults] = useState<Map<string, any>>(new Map());
   
@@ -106,10 +107,15 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
       let renderedSomething = false;
       
       const renderedCard = (
-        <div className={cn("mb-6", className)}>
-          <div className="flex items-start gap-3">
-            <Bot className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-            <div className="flex-1 space-y-3 min-w-0">
+        <div className={cn("flex items-start gap-3", className)}>
+          {showProfileIcon && (
+            <div className="flex-shrink-0 w-5">
+              <Bot className="h-5 w-5 text-primary mt-0.5" />
+            </div>
+          )}
+          {!showProfileIcon && <div className="w-5 flex-shrink-0" />}
+          <div className="flex-1 min-w-0">
+            <div className="space-y-3">
                 {msg.content && Array.isArray(msg.content) && msg.content.map((content: any, idx: number) => {
                   // Text content - render as markdown
                   if (content.type === "text") {
@@ -120,7 +126,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                     
                     renderedSomething = true;
                     return (
-                      <div key={idx} className="prose prose-sm dark:prose-invert max-w-none">
+                      <div key={idx} className="prose prose-sm dark:prose-invert max-w-none break-words">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
@@ -131,12 +137,18 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                                   style={claudeSyntaxTheme}
                                   language={match[1]}
                                   PreTag="div"
+                                  wrapLongLines={false}
+                                  customStyle={{
+                                    margin: 0,
+                                    overflowX: 'auto',
+                                    maxWidth: '100%'
+                                  }}
                                   {...props}
                                 >
                                   {String(children).replace(/\n$/, '')}
                                 </SyntaxHighlighter>
                               ) : (
-                                <code className={className} {...props}>
+                                <code className={cn(className, "overflow-x-auto inline-block max-w-full")} {...props}>
                                   {children}
                                 </code>
                               );
@@ -279,15 +291,9 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                   
                   return null;
                 })}
-                
-                {msg.usage && (
-                  <div className="text-xs text-muted-foreground mt-2 opacity-60">
-                    Tokens: {msg.usage.input_tokens} in, {msg.usage.output_tokens} out
-                  </div>
-                )}
-              </div>
             </div>
           </div>
+        </div>
       );
       
       if (!renderedSomething) return null;
@@ -305,10 +311,13 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
       let renderedSomething = false;
       
       const renderedCard = (
-        <div className={cn("mb-6 bg-secondary/20 rounded-lg px-4 py-3", className)}>
-          <div className="flex items-start gap-3">
-            <User className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <div className="flex-1 space-y-2 min-w-0">
+        <div className={cn("flex items-start gap-3", className)}>
+          <div className="flex-shrink-0 w-5">
+            <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="bg-card rounded-lg px-4 py-3">
+              <div className="space-y-2 break-words">
                 {/* Handle content that is a simple string (e.g. from user commands) */}
                 {(typeof msg.content === 'string' || (msg.content && !Array.isArray(msg.content))) && (
                   (() => {
@@ -338,7 +347,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                     
                     // Otherwise render as plain text
                     return (
-                      <div className="text-sm">
+                      <div className="text-sm break-words">
                         {contentStr}
                       </div>
                     );
@@ -407,7 +416,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                           
                           {beforeReminder && (
                             <div className="ml-6 p-2 bg-background rounded-md border">
-                              <pre className="text-xs font-mono overflow-x-auto whitespace-pre-wrap">
+                              <pre className="text-xs font-mono overflow-hidden whitespace-pre-wrap break-all">
                                 {beforeReminder}
                               </pre>
                             </div>
@@ -419,7 +428,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                           
                           {afterReminder && (
                             <div className="ml-6 p-2 bg-background rounded-md border">
-                              <pre className="text-xs font-mono overflow-x-auto whitespace-pre-wrap">
+                              <pre className="text-xs font-mono overflow-hidden whitespace-pre-wrap break-all">
                                 {afterReminder}
                               </pre>
                             </div>
@@ -579,7 +588,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                           <span className="text-sm font-medium">Tool Result</span>
                         </div>
                         <div className="ml-6 p-2 bg-background rounded-md border">
-                          <pre className="text-xs font-mono overflow-x-auto whitespace-pre-wrap">
+                          <pre className="text-xs font-mono overflow-hidden whitespace-pre-wrap break-all">
                             {contentText}
                           </pre>
                         </div>
@@ -596,7 +605,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                     
                     renderedSomething = true;
                     return (
-                      <div key={idx} className="text-sm">
+                      <div key={idx} className="text-sm break-words">
                         {textContent}
                       </div>
                     );
@@ -607,6 +616,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
               </div>
             </div>
           </div>
+        </div>
       );
       if (!renderedSomething) return null;
       return renderedCard;
@@ -685,8 +695,8 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       );
     }
 

@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Send,
-  Maximize2,
   Minimize2,
-  ChevronUp,
+  ChevronDown,
+  ArrowUp,
   Sparkles,
   Zap,
   Square,
@@ -246,12 +245,18 @@ const FloatingPromptInputInner = (
     return uniquePaths;
   };
 
-  // Update embedded images when prompt changes
+  // Update embedded images when prompt changes and auto-resize textarea
   useEffect(() => {
     console.log('[useEffect] Prompt changed:', prompt);
     const imagePaths = extractImagePaths(prompt);
     console.log('[useEffect] Setting embeddedImages to:', imagePaths);
     setEmbeddedImages(imagePaths);
+    
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 360) + 'px';
+    }
   }, [prompt, projectPath]);
 
   // Set up Tauri drag-drop event listener
@@ -353,6 +358,12 @@ const FloatingPromptInputInner = (
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     const newCursorPosition = e.target.selectionStart || 0;
+    
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 360) + 'px'; // Max 15 lines * 24px
+    }
 
     // Check if @ was just typed
     if (projectPath?.trim() && newValue.length > prompt.length && newValue[newCursorPosition - 1] === '@') {
@@ -610,7 +621,7 @@ const FloatingPromptInputInner = (
                   {isLoading ? (
                     <div className="rotating-symbol text-primary-foreground" />
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <ArrowUp className="h-4 w-4" />
                   )}
                 </Button>
               </div>
@@ -622,16 +633,21 @@ const FloatingPromptInputInner = (
       {/* Fixed Position Input Bar */}
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border",
-          dragActive && "ring-2 ring-primary ring-offset-2",
+          "fixed bottom-0 left-0 right-0 z-40 p-4",
           className
         )}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
       >
-        <div className="max-w-3xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto">
+          <div 
+            className={cn(
+              "rounded-lg bg-card shadow-lg",
+              dragActive && "ring-2 ring-primary ring-offset-2"
+            )}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
           {/* Image previews */}
           {embeddedImages.length > 0 && (
             <ImagePreview
@@ -641,53 +657,44 @@ const FloatingPromptInputInner = (
             />
           )}
 
-          <div className="px-4 py-3">
-            <div className="flex items-center gap-2">
-              {/* Model Picker */}
-              <Popover
-                trigger={
-                  <button
-                    disabled={isLoading || disabled}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent rounded-md transition-colors"
-                  >
-                    {selectedModelData.icon}
-                    <span>{selectedModelData.name}</span>
-                    <ChevronUp className="h-3 w-3 opacity-50" />
-                  </button>
-                }
-                content={
-                  <div className="w-[240px] p-1">
-                    {MODELS.map((model) => (
-                      <button
-                        key={model.id}
-                        onClick={() => {
-                          setSelectedModel(model.id);
-                          setModelPickerOpen(false);
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm",
-                          "hover:bg-accent",
-                          selectedModel === model.id && "bg-accent"
-                        )}
-                      >
-                        {model.icon}
-                        <div className="flex-1">
-                          <div className="font-medium">{model.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {model.description}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                }
-                open={modelPickerOpen}
-                onOpenChange={setModelPickerOpen}
-                align="start"
-                side="top"
+          <div className="p-4">
+            {/* Prompt Input - Full Width */}
+            <div className="relative mb-3">
+              <Textarea
+                ref={textareaRef}
+                value={prompt}
+                onChange={handleTextChange}
+                onKeyDown={handleKeyDown}
+                placeholder={dragActive ? "Drop images here..." : "How can I help you today?"}
+                disabled={isLoading || disabled}
+                className={cn(
+                  "w-full resize-none bg-transparent border-0 p-0 text-sm overflow-y-auto",
+                  "min-h-[24px] max-h-[360px]", // 15 lines * 24px line height
+                  "focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                  "hover:bg-transparent focus:bg-transparent",
+                  "border-none hover:border-none focus:border-none",
+                  dragActive && "border-primary"
+                )}
+                rows={1}
+                style={{ lineHeight: '24px' }}
               />
 
-              {/* Thinking Mode Picker */}
+              {/* File Picker */}
+              <AnimatePresence>
+                {showFilePicker && projectPath && projectPath.trim() && (
+                  <FilePicker
+                    basePath={projectPath.trim()}
+                    onSelect={handleFileSelect}
+                    onClose={handleFilePickerClose}
+                    initialQuery={filePickerQuery}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="flex items-center justify-between">
+              {/* Thinking Mode Picker - Left */}
               <Popover
                 trigger={
                   <TooltipProvider>
@@ -745,69 +752,77 @@ const FloatingPromptInputInner = (
                 side="top"
               />
 
-              {/* Prompt Input */}
-              <div className="flex-1 relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={prompt}
-                  onChange={handleTextChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder={dragActive ? "Drop images here..." : "Reply to Claude..."}
-                  disabled={isLoading || disabled}
-                  className={cn(
-                    "min-h-[40px] max-h-[100px] resize-none pr-10 py-2 text-sm",
-                    dragActive && "border-primary"
-                  )}
-                  rows={1}
+
+              {/* Right side: Model Picker + Send Button */}
+              <div className="flex items-center gap-2">
+                {/* Model Picker */}
+                <Popover
+                  trigger={
+                    <button
+                      disabled={isLoading || disabled}
+                      className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-foreground hover:bg-accent rounded-md transition-colors"
+                    >
+                      <span>{selectedModelData.name}</span>
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </button>
+                  }
+                  content={
+                    <div className="w-[240px] p-1">
+                      {MODELS.map((model) => (
+                        <button
+                          key={model.id}
+                          onClick={() => {
+                            setSelectedModel(model.id);
+                            setModelPickerOpen(false);
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-left text-sm",
+                            "hover:bg-accent",
+                            selectedModel === model.id && "bg-accent"
+                          )}
+                        >
+                          {model.icon}
+                          <div className="flex-1">
+                            <div className="font-medium">{model.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {model.description}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  }
+                  open={modelPickerOpen}
+                  onOpenChange={setModelPickerOpen}
+                  align="end"
+                  side="top"
                 />
 
+                {/* Send/Stop Button */}
                 <button
-                  onClick={() => setIsExpanded(true)}
-                  disabled={isLoading || disabled}
-                  className="absolute right-1.5 bottom-1.5 p-1.5 hover:bg-accent rounded transition-colors"
-                >
-                  <Maximize2 className="h-3.5 w-3.5" />
-                </button>
-
-                {/* File Picker */}
-                <AnimatePresence>
-                  {showFilePicker && projectPath && projectPath.trim() && (
-                    <FilePicker
-                      basePath={projectPath.trim()}
-                      onSelect={handleFileSelect}
-                      onClose={handleFilePickerClose}
-                      initialQuery={filePickerQuery}
-                    />
+                  onClick={isLoading ? onCancel : handleSend}
+                  disabled={isLoading ? false : (!prompt.trim() || disabled)}
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                    isLoading 
+                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                      : "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
-                </AnimatePresence>
+                >
+                  {isLoading ? (
+                    <Square className="h-4 w-4" />
+                  ) : (
+                    <ArrowUp className="h-4 w-4" />
+                  )}
+                </button>
               </div>
-
-              {/* Send/Stop Button */}
-              <button
-                onClick={isLoading ? onCancel : handleSend}
-                disabled={isLoading ? false : (!prompt.trim() || disabled)}
-                className={cn(
-                  "px-3 py-1.5 rounded-md transition-all font-medium text-sm",
-                  isLoading 
-                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
-                    : "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                )}
-              >
-                {isLoading ? (
-                  <>
-                    <Square className="h-3.5 w-3.5 inline mr-1" />
-                    Stop
-                  </>
-                ) : (
-                  <Send className="h-3.5 w-3.5" />
-                )}
-              </button>
-            </div>
-
-            <div className="mt-1.5 text-xs text-muted-foreground">
-              Press Enter to send, Shift+Enter for new line{projectPath?.trim() && ", @ to mention files, drag & drop images"}
             </div>
           </div>
+          </div>
+        </div>
+        
+        <div className="text-xs text-muted-foreground text-center mt-2">
+          Press Enter to send, Shift+Enter for new line{projectPath?.trim() && ", @ to mention files, drag & drop images"}
         </div>
       </div>
     </>

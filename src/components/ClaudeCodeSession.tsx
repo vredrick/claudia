@@ -614,7 +614,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   const messagesList = (
     <div
       ref={parentRef}
-      className="flex-1 overflow-y-auto relative"
+      className="flex-1 overflow-y-auto overflow-x-hidden relative px-6"
       style={{
         contain: 'strict',
       }}
@@ -628,6 +628,22 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
         <AnimatePresence>
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             const message = displayableMessages[virtualItem.index];
+            
+            // Determine if we should show the profile icon
+            let showProfileIcon = true;
+            if (message.type === "assistant" && virtualItem.index > 0) {
+              // Look for the previous non-meta message
+              let prevIndex = virtualItem.index - 1;
+              while (prevIndex >= 0 && displayableMessages[prevIndex].isMeta) {
+                prevIndex--;
+              }
+              if (prevIndex >= 0) {
+                const prevMessage = displayableMessages[prevIndex];
+                // Only show icon if previous message was from user
+                showProfileIcon = prevMessage.type === "user";
+              }
+            }
+            
             return (
               <motion.div
                 key={virtualItem.key}
@@ -637,7 +653,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="absolute inset-x-0 pb-4"
+                className="absolute left-0 right-0 pb-4"
                 style={{
                   top: virtualItem.start,
                 }}
@@ -646,6 +662,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
                   message={message} 
                   streamMessages={messages}
                   onLinkDetected={handleLinkDetected}
+                  showProfileIcon={showProfileIcon}
                 />
               </motion.div>
             );
@@ -867,7 +884,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             // Split pane layout when preview is active
             <SplitPane
               left={
-                <div className="h-full flex flex-col">
+                <div className="h-full flex flex-col overflow-hidden">
                   {projectPathInput}
                   {messagesList}
                 </div>
@@ -890,9 +907,11 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             />
           ) : (
             // Original layout when no preview
-            <div className="h-full flex flex-col max-w-3xl mx-auto px-4">
-              {projectPathInput}
-              {messagesList}
+            <div className="h-full flex flex-col overflow-hidden">
+              <div className="max-w-3xl mx-auto w-full px-4 h-full flex flex-col overflow-hidden">
+                {projectPathInput}
+                {messagesList}
+              </div>
             </div>
           )}
 

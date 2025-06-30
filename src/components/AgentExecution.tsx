@@ -679,10 +679,10 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
 
         {/* Scrollable Output Display */}
         <div className="flex-1 overflow-hidden">
-          <div className="w-full max-w-5xl mx-auto h-full">
+          <div className="w-full max-w-5xl mx-auto h-full overflow-hidden">
             <div 
               ref={scrollContainerRef}
-              className="h-full overflow-y-auto p-6 space-y-8"
+              className="h-full overflow-y-auto overflow-x-hidden p-6 space-y-8"
               onScroll={() => {
                 // Mark that user has scrolled manually
                 if (!hasUserScrolled) {
@@ -730,7 +730,7 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute inset-x-4 pb-4"
+                        className="absolute left-0 right-0 pb-4"
                         style={{ top: virtualItem.start }}
                       >
                         <ErrorBoundary>
@@ -825,7 +825,7 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
           <div className="flex-1 overflow-hidden p-6">
             <div 
               ref={fullscreenScrollRef}
-              className="h-full overflow-y-auto space-y-8"
+              className="h-full overflow-y-auto overflow-x-hidden space-y-8 px-6"
               onScroll={() => {
                 // Mark that user has scrolled manually
                 if (!hasUserScrolled) {
@@ -864,6 +864,22 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
                 <AnimatePresence>
                   {fullscreenRowVirtualizer.getVirtualItems().map((virtualItem) => {
                     const message = displayableMessages[virtualItem.index];
+                    
+                    // Determine if we should show the profile icon
+                    let showProfileIcon = true;
+                    if (message.type === "assistant" && virtualItem.index > 0) {
+                      // Look for the previous non-meta message
+                      let prevIndex = virtualItem.index - 1;
+                      while (prevIndex >= 0 && displayableMessages[prevIndex].isMeta) {
+                        prevIndex--;
+                      }
+                      if (prevIndex >= 0) {
+                        const prevMessage = displayableMessages[prevIndex];
+                        // Only show icon if previous message was from user
+                        showProfileIcon = prevMessage.type === "user";
+                      }
+                    }
+                    
                     return (
                       <motion.div
                         key={virtualItem.key}
@@ -872,11 +888,15 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute inset-x-4 pb-4"
+                        className="absolute left-0 right-0 pb-4"
                         style={{ top: virtualItem.start }}
                       >
                         <ErrorBoundary>
-                          <StreamMessage message={message} streamMessages={messages} />
+                          <StreamMessage 
+                            message={message} 
+                            streamMessages={messages} 
+                            showProfileIcon={showProfileIcon}
+                          />
                         </ErrorBoundary>
                       </motion.div>
                     );

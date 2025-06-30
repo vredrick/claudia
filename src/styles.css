@@ -2,25 +2,25 @@
 
 /* Dark theme configuration - Claude Desktop style */
 @theme {
-  /* Colors - Darker grays matching Claude Desktop */
-  --color-background: #0a0a0a;               /* Almost black background */
+  /* Colors - Lighter grays matching Claude Desktop */
+  --color-background: #1e1e1e;               /* Lighter gray background like Claude Desktop */
   --color-foreground: #e0e0e0;               /* Light gray text */
-  --color-card: #1a1a1a;                     /* Darker card background */
+  --color-card: #2d2d2d;                     /* Slightly lighter card background for prompt */
   --color-card-foreground: #e0e0e0;
-  --color-popover: #1a1a1a;                  /* Same as card */
+  --color-popover: #2a2a2a;                  /* Same as card */
   --color-popover-foreground: #e0e0e0;
   --color-primary: #ff6b35;                  /* Orange/coral accent like Claude */
   --color-primary-foreground: #ffffff;
-  --color-secondary: #222222;                /* Dark gray for secondary elements */
+  --color-secondary: #2a2a2a;                /* Medium gray for secondary elements */
   --color-secondary-foreground: #e0e0e0;
-  --color-muted: #2a2a2a;                    /* Muted gray */
+  --color-muted: #353535;                    /* Muted gray */
   --color-muted-foreground: #999999;         /* Lighter gray for muted text */
-  --color-accent: #222222;                   /* Subtle accent background */
+  --color-accent: #2a2a2a;                   /* Subtle accent background */
   --color-accent-foreground: #e0e0e0;
   --color-destructive: #dc2626;              /* Red for errors */
   --color-destructive-foreground: #ffffff;
-  --color-border: #2a2a2a;                   /* Subtle borders */
-  --color-input: #1a1a1a;                    /* Input background */
+  --color-border: #353535;                   /* Subtle borders */
+  --color-input: #252525;                    /* Input background */
   --color-ring: #ff6b35;                     /* Match primary */
   
   /* Additional colors for status messages */
@@ -124,46 +124,43 @@ button {
 }
 
 button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: none;
+  box-shadow: none;
 }
 
 button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: none;
+  box-shadow: none;
 }
 
 /* Primary button enhancements */
 button[class*="bg-primary"],
 .bg-primary {
   background: var(--color-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
 }
 
 button[class*="bg-primary"]:hover:not(:disabled),
 .bg-primary:hover {
   background: #ff7f50;  /* Lighter orange on hover */
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+  box-shadow: none;
 }
 
 /* Card enhancements */
-.card,
-[class*="rounded"][class*="border"] {
+.card {
   border-color: var(--color-border);
   background-color: var(--color-card);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   transition: all 0.2s var(--ease-smooth);
 }
 
-.card:hover,
-[class*="rounded"][class*="border"]:hover {
-  background-color: #2f2f2f;
+.card:hover {
+  background-color: #353535;
   border-color: #404040;
 }
 
 /* Input enhancements */
 input,
-textarea,
 select {
   background-color: var(--color-input);
   border: 1px solid var(--color-border);
@@ -171,12 +168,33 @@ select {
   font-size: 14px;
 }
 
+textarea {
+  background-color: var(--color-input);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s var(--ease-smooth);
+  font-size: 14px;
+}
+
+/* Specific override for prompt input */
+textarea.bg-transparent {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+textarea.bg-transparent:hover,
+textarea.bg-transparent:focus,
+textarea.bg-transparent:focus-visible {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 input:focus,
 textarea:focus,
 select:focus {
-  background-color: #3a3a3a;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+  background-color: var(--color-input);
+  border-color: var(--color-border);
+  box-shadow: none;
 }
 
 /* Code block enhancements */
@@ -214,7 +232,6 @@ button:focus-visible,
 [role="combobox"]:focus-visible {
   outline: none !important;
   box-shadow: none !important;
-  border-color: var(--color-input) !important;
 }
 
 /* Remove ring styles */
@@ -330,6 +347,8 @@ button:focus-visible,
   max-width: 65ch;
   font-size: 1rem;
   line-height: 1.75;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .prose-sm {
@@ -424,6 +443,7 @@ button:focus-visible,
   border-radius: 0.375rem;
   padding: 0.857em 1.143em;
   background-color: var(--color-card);
+  max-width: 100%;
 }
 
 .prose pre code {
@@ -643,9 +663,9 @@ button:focus-visible,
 }
 
 .message-card:hover {
-  background-color: #2f2f2f;
+  background-color: #353535;
   border-color: #404040;
-  transform: translateY(-1px);
+  transform: none;
 }
 
 /* Terminal/code output specific styles */
