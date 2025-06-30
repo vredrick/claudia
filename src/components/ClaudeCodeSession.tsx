@@ -612,85 +612,102 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   }, []);
 
   const messagesList = (
-    <div
-      ref={parentRef}
-      className="flex-1 overflow-y-auto overflow-x-hidden relative px-6"
-      style={{
-        contain: 'strict',
-      }}
-    >
+    <div className="flex-1 overflow-hidden flex flex-col">
       <div
-        className="relative w-full py-4"
+        ref={parentRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden relative px-6"
         style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
+          contain: 'strict',
         }}
       >
-        <AnimatePresence>
-          {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-            const message = displayableMessages[virtualItem.index];
-            
-            // Determine if we should show the profile icon
-            let showProfileIcon = true;
-            if (message.type === "assistant" && virtualItem.index > 0) {
-              // Look for the previous non-meta message
-              let prevIndex = virtualItem.index - 1;
-              while (prevIndex >= 0 && displayableMessages[prevIndex].isMeta) {
-                prevIndex--;
+        <div
+          className="relative w-full py-4"
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+          }}
+        >
+          <AnimatePresence>
+            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+              const message = displayableMessages[virtualItem.index];
+              
+              // Determine if we should show the profile icon
+              let showProfileIcon = true;
+              if (message.type === "assistant" && virtualItem.index > 0) {
+                // Look for the previous non-meta message
+                let prevIndex = virtualItem.index - 1;
+                while (prevIndex >= 0 && displayableMessages[prevIndex].isMeta) {
+                  prevIndex--;
+                }
+                if (prevIndex >= 0) {
+                  const prevMessage = displayableMessages[prevIndex];
+                  // Only show icon if previous message was from user
+                  showProfileIcon = prevMessage.type === "user";
+                }
               }
-              if (prevIndex >= 0) {
-                const prevMessage = displayableMessages[prevIndex];
-                // Only show icon if previous message was from user
-                showProfileIcon = prevMessage.type === "user";
-              }
-            }
-            
-            return (
-              <motion.div
-                key={virtualItem.key}
-                data-index={virtualItem.index}
-                ref={(el) => el && rowVirtualizer.measureElement(el)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="absolute left-0 right-0 pb-4"
-                style={{
-                  top: virtualItem.start,
-                }}
-              >
-                <StreamMessage 
-                  message={message} 
-                  streamMessages={messages}
-                  onLinkDetected={handleLinkDetected}
-                  showProfileIcon={showProfileIcon}
-                />
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+              
+              return (
+                <motion.div
+                  key={virtualItem.key}
+                  data-index={virtualItem.index}
+                  ref={(el) => el && rowVirtualizer.measureElement(el)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute left-0 right-0 pb-4"
+                  style={{
+                    top: virtualItem.start,
+                  }}
+                >
+                  <StreamMessage 
+                    message={message} 
+                    streamMessages={messages}
+                    onLinkDetected={handleLinkDetected}
+                    showProfileIcon={showProfileIcon}
+                  />
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
 
-      {/* Loading and Error indicators positioned relative to the scroll container */}
-      <div className="sticky bottom-0 w-full flex flex-col items-center pb-40">
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center justify-center py-4 mt-4"
-          >
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </motion.div>
-        )}
-        
-        {error && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive mt-4 w-full max-w-5xl mx-auto"
-          >
-            {error}
-          </motion.div>
-        )}
+        {/* Loading and Error indicators positioned relative to the scroll container */}
+        <div className="sticky bottom-0 w-full flex flex-col items-center pb-4">
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center py-4 mt-4"
+            >
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </motion.div>
+          )}
+          
+          {error && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive mt-4 w-full max-w-5xl mx-auto"
+            >
+              {error}
+            </motion.div>
+          )}
+        </div>
+      </div>
+      
+      {/* Floating Prompt Input - Now inside the container */}
+      <div className="flex-shrink-0">
+        <ErrorBoundary>
+          <FloatingPromptInput
+            ref={floatingPromptRef}
+            onSend={handleSendPrompt}
+            onCancel={handleCancelExecution}
+            isLoading={isLoading}
+            disabled={!projectPath}
+            projectPath={projectPath}
+            className="relative p-0"
+          />
+        </ErrorBoundary>
       </div>
     </div>
   );
@@ -884,7 +901,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             // Split pane layout when preview is active
             <SplitPane
               left={
-                <div className="h-full flex flex-col overflow-hidden">
+                <div className="h-full flex flex-col overflow-hidden px-3">
                   {projectPathInput}
                   {messagesList}
                 </div>
@@ -908,7 +925,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
           ) : (
             // Original layout when no preview
             <div className="h-full flex flex-col overflow-hidden">
-              <div className="max-w-3xl mx-auto w-full px-4 h-full flex flex-col overflow-hidden">
+              <div className="max-w-5xl mx-auto w-full px-6 h-full flex flex-col overflow-hidden">
                 {projectPathInput}
                 {messagesList}
               </div>
@@ -926,18 +943,6 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             </div>
           )}
         </div>
-
-        {/* Floating Prompt Input - Always visible */}
-        <ErrorBoundary>
-          <FloatingPromptInput
-            ref={floatingPromptRef}
-            onSend={handleSendPrompt}
-            onCancel={handleCancelExecution}
-            isLoading={isLoading}
-            disabled={!projectPath}
-            projectPath={projectPath}
-          />
-        </ErrorBoundary>
 
         {/* Timeline */}
         {showTimeline && effectiveSession && (

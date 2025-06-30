@@ -630,14 +630,14 @@ const FloatingPromptInputInner = (
         )}
       </AnimatePresence>
 
-      {/* Fixed Position Input Bar */}
+      {/* Input Bar - Now positioned relative */}
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 p-4",
+          "w-full p-4",
           className
         )}
       >
-        <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full max-w-5xl mx-auto">
           <div 
             className={cn(
               "rounded-lg bg-card shadow-lg",
