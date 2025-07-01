@@ -754,7 +754,7 @@ button:focus-visible,
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #4a4a4a var(--color-background);
+  scrollbar-color: transparent transparent;
 }
 
 /* For Webkit Browsers (Chrome, Safari, Edge) */
@@ -764,17 +764,19 @@ button:focus-visible,
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: transparent;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #4a4a4a;
+  background: transparent;
   border-radius: 5px;
-  border: 1px solid var(--color-background);
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #5a5a5a;
+  background: transparent !important;
+  border: 1px solid var(--color-border);
 }
 
 *::-webkit-scrollbar-corner {
@@ -790,18 +792,29 @@ code::-webkit-scrollbar,
   height: 8px;
 }
 
+pre::-webkit-scrollbar-track,
+.w-md-editor-content::-webkit-scrollbar-track,
+code::-webkit-scrollbar-track,
+.overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 pre::-webkit-scrollbar-thumb,
 .w-md-editor-content::-webkit-scrollbar-thumb,
 code::-webkit-scrollbar-thumb,
 .overflow-auto::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
 pre::-webkit-scrollbar-thumb:hover,
 .w-md-editor-content::-webkit-scrollbar-thumb:hover,
 code::-webkit-scrollbar-thumb:hover,
 .overflow-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.4);
+  background: transparent !important;
+  border: 1px solid var(--color-border);
 }
 
 /* Syntax highlighter specific */
@@ -811,16 +824,19 @@ code::-webkit-scrollbar-thumb:hover,
 }
 
 .bg-zinc-950 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
+  background: transparent;
 }
 
 .bg-zinc-950 ::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.3);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .bg-zinc-950 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.5);
+  background: transparent !important;
+  border: 1px solid var(--color-border);
 }
 
 /* Code preview specific scrollbar */
@@ -830,34 +846,36 @@ code::-webkit-scrollbar-thumb:hover,
 }
 
 .code-preview-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
   border-radius: 6px;
 }
 
 .code-preview-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.4);
+  background: transparent;
   border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 .code-preview-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.6);
+  background: transparent !important;
+  border: 1px solid var(--color-border);
 }
 
 .code-preview-scroll::-webkit-scrollbar-thumb:active {
-  background-color: rgba(107, 114, 128, 0.8);
+  background: transparent !important;
+  border: 1px solid var(--color-muted-foreground);
 }
 
 .code-preview-scroll::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
   border-radius: 6px;
 }
 
 /* Firefox scrollbar for code preview */
 .code-preview-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(107, 114, 128, 0.4) rgba(0, 0, 0, 0.2);
+  scrollbar-color: transparent transparent;
 }
 
 /* NFO Credits Scanlines Animation */

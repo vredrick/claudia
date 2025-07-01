@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover } from "@/components/ui/popover";
-import { api, type Session } from "@/lib/api";
+import { api, type Session, type Project, type ClaudeMdFile } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { open } from "@tauri-apps/plugin-dialog";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
@@ -31,6 +31,7 @@ import { SplitPane } from "@/components/ui/split-pane";
 import { WebviewPreview } from "./WebviewPreview";
 import type { ClaudeStreamMessage } from "./AgentExecution";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { SessionListPanel } from "./SessionListPanel";
 
 interface ClaudeCodeSessionProps {
   /**
@@ -42,9 +43,17 @@ interface ClaudeCodeSessionProps {
    */
   initialProjectPath?: string;
   /**
+   * All sessions organized by project for the sidebar
+   */
+  sessionsByProject?: Map<string, { project: Project; sessions: Session[] }>;
+  /**
    * Callback to go back
    */
   onBack: () => void;
+  /**
+   * Callback when a CLAUDE.md file should be edited
+   */
+  onEditClaudeFile?: (file: ClaudeMdFile) => void;
   /**
    * Optional className for styling
    */
@@ -60,7 +69,9 @@ interface ClaudeCodeSessionProps {
 export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   session,
   initialProjectPath = "",
+  sessionsByProject,
   onBack,
+  onEditClaudeFile,
   className,
 }) => {
   const [projectPath, setProjectPath] = useState(initialProjectPath || session?.project_path || "");
@@ -80,6 +91,14 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   const [forkCheckpointId, setForkCheckpointId] = useState<string | null>(null);
   const [forkSessionName, setForkSessionName] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  
+  // State for session panel
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(() => {
+    // Load from localStorage or default to false (expanded)
+    const saved = localStorage.getItem('sessionPanelCollapsed');
+    return saved ? saved === 'true' : false;
+  });
+  const [currentSession, setCurrentSession] = useState<Session | undefined>(session);
   
   // New state for preview feature
   const [showPreview, setShowPreview] = useState(false);
@@ -197,6 +216,16 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
       loadSessionHistory();
     }
   }, [session]);
+  
+  // Update current session when prop changes
+  useEffect(() => {
+    setCurrentSession(session);
+  }, [session]);
+  
+  // Persist panel collapsed state
+  useEffect(() => {
+    localStorage.setItem('sessionPanelCollapsed', isPanelCollapsed.toString());
+  }, [isPanelCollapsed]);
 
 
   // Auto-scroll to bottom when new messages arrive
@@ -246,6 +275,57 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSessionSelect = async (sessionWithProject: { projectPath: string; projectId: string } & Session) => {
+    // Clear current state
+    setMessages([]);
+    setRawJsonlOutput([]);
+    setError(null);
+    setTotalTokens(0);
+    setIsFirstPrompt(false);
+    
+    // Update session info
+    setCurrentSession(sessionWithProject);
+    setProjectPath(sessionWithProject.projectPath);
+    setExtractedSessionInfo({
+      sessionId: sessionWithProject.id,
+      projectId: sessionWithProject.projectId
+    });
+    
+    // Load the new session history
+    try {
+      setIsLoading(true);
+      const history = await api.loadSessionHistory(sessionWithProject.id, sessionWithProject.projectId);
+      
+      // Convert history to messages format
+      const loadedMessages: ClaudeStreamMessage[] = history.map(entry => ({
+        ...entry,
+        type: entry.type || "assistant"
+      }));
+      
+      setMessages(loadedMessages);
+      setRawJsonlOutput(history.map(h => JSON.stringify(h)));
+    } catch (err) {
+      console.error("Failed to load session history:", err);
+      setError("Failed to load session history");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleNewSession = (newProjectPath?: string) => {
+    // Clear all state for new session
+    setMessages([]);
+    setRawJsonlOutput([]);
+    setError(null);
+    setTotalTokens(0);
+    setIsFirstPrompt(true);
+    setCurrentSession(undefined);
+    // Set project path if provided, otherwise clear it
+    setProjectPath(newProjectPath || "");
+    setExtractedSessionInfo(null);
+    setClaudeSessionId(null);
   };
 
   const handleSelectPath = async () => {
@@ -687,7 +767,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive mt-4 w-full max-w-5xl mx-auto"
+              className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive mt-4 w-full max-w-5xl mx-auto"
             >
               {error}
             </motion.div>
@@ -769,8 +849,23 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   }
 
   return (
-    <div className={cn("flex flex-col h-full bg-background", className)}>
-      <div className="w-full h-full flex flex-col">
+    <div className={cn("flex h-full bg-background", className)}>
+      {/* Session List Panel */}
+      {sessionsByProject && (
+        <SessionListPanel
+          sessionsByProject={sessionsByProject}
+          selectedSession={currentSession}
+          onSessionSelect={handleSessionSelect}
+          onNewSession={handleNewSession}
+          isCollapsed={isPanelCollapsed}
+          onToggleCollapse={() => setIsPanelCollapsed(!isPanelCollapsed)}
+          onEditClaudeFile={onEditClaudeFile}
+          currentProjectPath={projectPath}
+        />
+      )}
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

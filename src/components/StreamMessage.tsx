@@ -316,7 +316,7 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({ message, classNa
             <User className="h-5 w-5 text-muted-foreground mt-0.5" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="bg-card rounded-lg px-4 py-3">
+            <div className="bg-card rounded-md px-4 py-3">
               <div className="space-y-2 break-words">
                 {/* Handle content that is a simple string (e.g. from user commands) */}
                 {(typeof msg.content === 'string' || (msg.content && !Array.isArray(msg.content))) && (

@@ -36,6 +36,7 @@ function App() {
   const [showNFO, setShowNFO] = useState(false);
   const [showClaudeBinaryDialog, setShowClaudeBinaryDialog] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [selectedProjectSessions, setSelectedProjectSessions] = useState<Map<string, { project: Project; sessions: Session[] }> | null>(null);
 
   // Load projects on mount when in projects view
   useEffect(() => {
@@ -92,8 +93,28 @@ function App() {
       setLoading(true);
       setError(null);
       const sessionList = await api.getProjectSessions(project.id);
-      setSessions(sessionList);
+      
+      // Create a map with just this project's sessions
+      const projectSessionsMap = new Map<string, { project: Project; sessions: Session[] }>();
+      projectSessionsMap.set(project.id, { project, sessions: sessionList });
+      setSelectedProjectSessions(projectSessionsMap);
+      
+      // Find the most recent session in this project
+      let mostRecentSession: Session | null = null;
+      let mostRecentTimestamp = 0;
+      
+      for (const session of sessionList) {
+        const timestamp = session.created_at || 0;
+        if (timestamp > mostRecentTimestamp) {
+          mostRecentTimestamp = timestamp;
+          mostRecentSession = session;
+        }
+      }
+      
+      // Navigate to claude-code-session with the most recent session
+      setSelectedSession(mostRecentSession);
       setSelectedProject(project);
+      setView("claude-code-session");
     } catch (err) {
       console.error("Failed to load sessions:", err);
       setError("Failed to load sessions for this project.");
@@ -108,6 +129,7 @@ function App() {
   const handleNewSession = async () => {
     setView("claude-code-session");
     setSelectedSession(null);
+    setSelectedProjectSessions(null);
   };
 
   /**
@@ -131,7 +153,12 @@ function App() {
    */
   const handleBackFromClaudeFileEditor = () => {
     setEditingClaudeFile(null);
-    setView("projects");
+    // If we have a selected session, return to chat view
+    if (selectedSession) {
+      setView("claude-code-session");
+    } else {
+      setView("projects");
+    }
   };
 
   const renderContent = () => {
@@ -336,10 +363,14 @@ function App() {
         return (
           <ClaudeCodeSession
             session={selectedSession || undefined}
+            sessionsByProject={selectedProjectSessions || undefined}
             onBack={() => {
               setSelectedSession(null);
+              setSelectedProjectSessions(null);
+              setSelectedProject(null);
               setView("projects");
             }}
+            onEditClaudeFile={handleEditClaudeFile}
           />
         );
       

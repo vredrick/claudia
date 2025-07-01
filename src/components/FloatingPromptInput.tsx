@@ -497,7 +497,7 @@ const FloatingPromptInputInner = (
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-background border border-border rounded-lg shadow-lg w-full max-w-2xl p-4 space-y-4"
+              className="bg-background border border-border rounded-md shadow-lg w-full max-w-2xl p-4 space-y-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -639,7 +639,7 @@ const FloatingPromptInputInner = (
         <div className="w-full max-w-5xl mx-auto">
           <div 
             className={cn(
-              "rounded-lg bg-card shadow-lg",
+              "rounded-md bg-card shadow-lg",
               dragActive && "ring-2 ring-primary ring-offset-2"
             )}
             onDragEnter={handleDrag}

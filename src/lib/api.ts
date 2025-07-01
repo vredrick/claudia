@@ -32,6 +32,10 @@ export interface Session {
   first_message?: string;
   /** Timestamp of the first user message (if available) */
   message_timestamp?: string;
+  /** Claude messages in the session */
+  claude_messages?: Array<{ text: string; [key: string]: any }>;
+  /** Legacy timestamp field (use created_at instead) */
+  timestamp?: number;
 }
 
 /**
@@ -501,6 +505,40 @@ export const api = {
       return await invoke<Session[]>('get_project_sessions', { projectId });
     } catch (error) {
       console.error("Failed to get project sessions:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lists all projects with their sessions in one call
+   * @returns Promise resolving to a map of project ID to project data with sessions
+   */
+  async getAllProjectsWithSessions(): Promise<Map<string, { project: Project; sessions: Session[] }>> {
+    try {
+      const projects = await this.listProjects();
+      const projectsWithSessions = new Map<string, { project: Project; sessions: Session[] }>();
+      
+      // Load sessions for each project in parallel
+      const sessionPromises = projects.map(async (project) => {
+        try {
+          const sessions = await this.getProjectSessions(project.id);
+          return { project, sessions };
+        } catch (error) {
+          console.error(`Failed to load sessions for project ${project.id}:`, error);
+          return { project, sessions: [] };
+        }
+      });
+      
+      const results = await Promise.all(sessionPromises);
+      
+      // Build the map
+      for (const { project, sessions } of results) {
+        projectsWithSessions.set(project.id, { project, sessions });
+      }
+      
+      return projectsWithSessions;
+    } catch (error) {
+      console.error("Failed to get all projects with sessions:", error);
       throw error;
     }
   },
