@@ -31,9 +31,29 @@ https://github.com/user-attachments/assets/bf0bdf9d-ba91-45af-9ac4-7274f57075cf
 
 Think of Claudia as your command center for Claude Code - bridging the gap between the command-line tool and a visual experience that makes AI-assisted development more intuitive and productive.
 
+## 🚧 Recent Updates
+
+### Latest Improvements (December 2024)
+
+- **🎨 Enhanced UI Polish**:
+  - Transparent scrollbars with border-only styling on hover for a cleaner interface
+  - Subtle dark grey styling for prompt section buttons
+  - Integrated prompt input into chat container for better layout with preview panel
+
+- **🔄 Improved Navigation Flow**:
+  - Back button from chat sessions now returns to all projects view
+  - CLAUDE.md editor back button correctly returns to the chat session (not projects)
+  - Fixed project-specific session filtering when navigating back
+
+- **📊 Usage Tracking**:
+  - Real-time token usage display in chat sessions
+  - Comprehensive usage analytics dashboard with charts
+  - Export usage data for accounting and analysis
+
 ## 📋 Table of Contents
 
 - [🌟 Overview](#-overview)
+- [🚧 Recent Updates](#-recent-updates)
 - [✨ Features](#-features)
   - [🗂️ Project & Session Management](#️-project--session-management)
   - [🤖 CC Agents](#-cc-agents)
